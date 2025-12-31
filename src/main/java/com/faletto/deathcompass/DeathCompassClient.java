@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
@@ -33,6 +35,7 @@ public class DeathCompassClient implements ClientModInitializer {
     static double y = Double.NaN;
     static double z = Double.NaN;
     static int color = ARGB.color(255, 255, 255);
+    public static boolean wasAlive = true;
     static Minecraft mc = Minecraft.getInstance();
 
 
@@ -44,11 +47,40 @@ public class DeathCompassClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         LOGGER.info("Jarvis, activate goon mode");
-        Watcher.register();
+
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (client.player == null) {
+                return;
+            }
+            boolean isAlive = client.player.isAlive();
+            // Ensures compass only starts one time
+            if (wasAlive && !isAlive) {
+                DeathCompassClient.startTimer();
+            }
+
+            wasAlive = isAlive;
+
+        });
+
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, b) -> dispatcher.register(
+			ClientCommandManager.literal("dismiss")
+			.executes((context) -> {
+				DeathCompassClient.dismiss();
+				return 0;
+			})));
+
+		ClientCommandRegistrationCallback.EVENT.register((dispatcher, b) -> dispatcher.register(
+			ClientCommandManager.literal("lastdeath")
+			.executes((context) -> {
+				DeathCompassClient.getLastDeath();
+				return 0;
+			})));
+		    
 
         HudElementRegistry.attachElementAfter(VanillaHudElements.SUBTITLES,
                 ResourceLocation.fromNamespaceAndPath(DeathCompassClient.MOD_ID, "deathcompass"),
                 DeathCompassClient::timerLoop);
+
     }
 
     public static void startTimer() {

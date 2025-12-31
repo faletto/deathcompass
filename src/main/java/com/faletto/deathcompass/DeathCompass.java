@@ -1,6 +1,8 @@
 package com.faletto.deathcompass;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.commands.CommandSourceStack;
 
@@ -22,20 +24,7 @@ public class DeathCompass implements ModInitializer {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
-		LOGGER.error("LOADED DEATH COMPASS");
-		CommandRegistrationCallback.EVENT.register((dispatcher, b, c) -> dispatcher.register(
-			LiteralArgumentBuilder.<CommandSourceStack>literal("dismiss")
-			.executes((context) -> {
-				DeathCompassClient.dismiss();
-				return 0;
-			})));
-
-		CommandRegistrationCallback.EVENT.register((dispatcher, b, c) -> dispatcher.register(
-			LiteralArgumentBuilder.<CommandSourceStack>literal("lastdeath")
-			.executes((context) -> {
-				DeathCompassClient.getLastDeath();
-				return 0;
-			})));
-		    
+		LOGGER.info("LOADED DEATH COMPASS");
+		
 	}
 }
